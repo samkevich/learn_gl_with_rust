@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 glutin = "0.29.1"
 gl = "0.14.0"
+thiserror = "1.0"
