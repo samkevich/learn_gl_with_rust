@@ -1,3 +1,6 @@
+mod renderer;
+
+use crate::renderer::Renderer;
 use glutin::event::{Event, WindowEvent};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
@@ -20,6 +23,7 @@ fn main() {
 
     gl::load_with(|ptr| gl_context.get_proc_address(ptr) as *const _);
 
+    let renderer = Renderer::new().expect("Cannot create renderer");
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 
@@ -31,10 +35,7 @@ fn main() {
                 _ => (),
             },
             Event::RedrawRequested(_) => {
-                unsafe {
-                    gl::ClearColor(0.0, 0.0, 1.0, 1.0);
-                    gl::Clear(gl::COLOR_BUFFER_BIT);
-                }
+                renderer.draw();
                 gl_context.swap_buffers().unwrap();
             }
             _ => (),
