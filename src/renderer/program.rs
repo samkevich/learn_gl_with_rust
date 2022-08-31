@@ -1,6 +1,6 @@
 use crate::renderer::shader::{Shader, ShaderError};
 use gl::types::*;
-use std::ffi::{CString, NulError};
+use std::ffi::CString;
 
 pub struct ShaderProgram {
     pub id: GLuint,
@@ -52,7 +52,7 @@ impl ShaderProgram {
         gl::UseProgram(self.id);
     }
 
-    pub unsafe fn get_attrib_location(&self, attrib: &str) -> Result<GLuint, NulError> {
+    pub unsafe fn get_attrib_location(&self, attrib: &str) -> Result<GLuint, ShaderError> {
         let attrib = CString::new(attrib)?;
         Ok(gl::GetAttribLocation(self.id, attrib.as_ptr()) as GLuint)
     }
