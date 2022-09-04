@@ -1,5 +1,5 @@
 use gl::types::*;
-use image::ImageError;
+use image::{EncodableLayout, ImageError};
 use std::path::Path;
 
 pub struct Texture {
@@ -24,8 +24,7 @@ impl Texture {
     pub unsafe fn load(&self, path: &Path) -> Result<(), ImageError> {
         self.bind();
 
-        let img = image::open(path)?;
-        let data = img.as_bytes();
+        let img = image::open(path)?.into_rgba8();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -35,7 +34,7 @@ impl Texture {
             0,
             gl::RGBA,
             gl::UNSIGNED_BYTE,
-            data.as_ptr() as *const _,
+            img.as_bytes().as_ptr() as *const _,
         );
         gl::GenerateMipmap(gl::TEXTURE_2D);
         Ok(())
@@ -55,5 +54,10 @@ impl Texture {
 
     pub unsafe fn bind(&self) {
         gl::BindTexture(gl::TEXTURE_2D, self.id)
+    }
+
+    pub unsafe fn activate(&self, unit: GLuint) {
+        gl::ActiveTexture(unit);
+        self.bind();
     }
 }

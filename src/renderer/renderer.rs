@@ -29,9 +29,12 @@ out vec4 FragColor;
 in vec2 texCoord;
 
 uniform sampler2D texture0;
+uniform sampler2D texture1;
 
 void main() {
-    FragColor = texture(texture0, texCoord);
+    vec4 color0 = texture(texture0, texCoord);
+    vec4 color1 = texture(texture1, texCoord);
+    FragColor = mix(color0, color1, 0.6) * color0.a;
 }
 "#;
 
@@ -68,7 +71,8 @@ pub struct Renderer {
     _vertex_buffer: Buffer,
     _index_buffer: Buffer,
     vertex_array: VertexArray,
-    texture: Texture,
+    texture0: Texture,
+    texture1: Texture,
 }
 
 impl Renderer {
@@ -92,10 +96,17 @@ impl Renderer {
             let color_attrib = program.get_attrib_location("vertexTexCoord")?;
             set_attribute!(vertex_array, color_attrib, Vertex::1);
 
-            let texture = Texture::new();
-            texture.set_wrapping(gl::REPEAT);
-            texture.set_filtering(gl::LINEAR);
-            texture.load(&Path::new("assets/ferris.png"))?;
+            let texture0 = Texture::new();
+            texture0.set_wrapping(gl::REPEAT);
+            texture0.set_filtering(gl::LINEAR);
+            texture0.load(&Path::new("assets/logo.png"))?;
+            program.set_int_uniform("texture0", 0)?;
+
+            let texture1 = Texture::new();
+            texture1.set_wrapping(gl::REPEAT);
+            texture1.set_filtering(gl::LINEAR);
+            texture1.load(&Path::new("assets/rust.jpg"))?;
+            program.set_int_uniform("texture1", 1)?;
 
             gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::Enable(gl::BLEND);
@@ -105,7 +116,8 @@ impl Renderer {
                 _vertex_buffer: vertex_buffer,
                 _index_buffer: index_buffer,
                 vertex_array,
-                texture,
+                texture0,
+                texture1,
             })
         }
     }
@@ -114,7 +126,8 @@ impl Renderer {
         unsafe {
             gl::ClearColor(0.5, 0.5, 0.5, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
-            self.texture.bind();
+            self.texture0.activate(gl::TEXTURE0);
+            self.texture1.activate(gl::TEXTURE1);
             self.program.apply();
             self.vertex_array.bind();
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, ptr::null());

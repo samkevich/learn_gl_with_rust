@@ -56,4 +56,11 @@ impl ShaderProgram {
         let attrib = CString::new(attrib)?;
         Ok(gl::GetAttribLocation(self.id, attrib.as_ptr()) as GLuint)
     }
+
+    pub unsafe fn set_int_uniform(&self, name: &str, value: i32) -> Result<(), ShaderError> {
+        self.apply();
+        let uniform = CString::new(name)?;
+        gl::Uniform1i(gl::GetUniformLocation(self.id, uniform.as_ptr()), value);
+        Ok(())
+    }
 }
